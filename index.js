@@ -14,10 +14,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
 const port = 3000;
-
+let session ;
 const apiId = Number(process.env.apiId);
 const apiHash = process.env.apiHash;
-const session = process.env.session;
+session = process.env.session;
 const stringSession = new StringSession(session); 
 
 const JSON_FILE = "files.json";
@@ -45,6 +45,7 @@ app.listen(port, async () => {
   });
 
   console.log("You should now be connected.");
+  console.log(client.session.save());
   console.log(`Server started successfully on port: ${port}`);
 
   app.post('/upload', upload.single('file'), async (req, res) => {
@@ -98,4 +99,32 @@ app.listen(port, async () => {
       res.send(buffer);
     }
   });
+  app.delete('/delete/:id',async (req,res)=>{
+    const idToDel = parseInt(req.params.id)
+    let found = false;
+    let i = 0;
+    for(let file of dataObj){
+      
+      if(file.id == idToDel){
+        const result = await client.invoke(new Api.messages.DeleteMessages({
+          revoke:true,
+          id:[idToDel]
+        }));
+        console.log(result)
+        dataObj.splice(i,1);
+        console.log(dataObj)
+        fs.writeFileSync(JSON_FILE, JSON.stringify(dataObj, null, 2)); 
+        if(result.ptsCount>0){
+          found = true;
+        }
+      }
+      i++
+    }
+    if(found === true){
+      res.send(200)
+    }else{
+      res.send(404)
+    }
+
+  })
 });
