@@ -1,7 +1,7 @@
 import { TelegramClient, Api } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import input from "input"; 
-import express from 'express';
+import express, { json } from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import multer from 'multer';
@@ -143,33 +143,93 @@ app.listen(port, async () => {
     res.sendStatus(200);
   });
   
+  function regex(filename) {
+    // Regex to match "(number)" at the end of the filename before any extension
+    const regex = /\(\d+\)$/;
+    // Replace the matched pattern with an empty string
+    return filename.replace(regex, '');
+  }
 
   app.get('/download/:id', async (req, res) => {
-    const msgs = await client.getMessages("me", { limit: 1 });
-    console.log(msgs);
-
-    const id = req.params.id;
-    console.log(id);
-    const msg = await client.getMessages("me", {
-      ids: parseInt(id),
-    });
-    const media = msg[0].media;
-    const fileName = msg[0].message;
-    console.log(fileName);
-    if (media) {
-      const buffer = await client.downloadMedia(media, {
-        workers: 1,
-      });
-      res.set('Content-Type', media.document.mimeType);
-      res.attachment(fileName);
-      res.send(buffer);
-      buffer = null;
+    try {
+      const id = parseInt(req.params.id);
+      console.log(id);
+  
+      const data = dataObj.find(data => data.id === id || (Array.isArray(data.parts) && data.parts.some(part => part.id == id)));
+      if (data) {
+        const isMultiPart = Array.isArray(data.parts);
+        const msg = await client.getMessages("me", { ids: id });
+        if (msg.length > 0) {
+          const media = msg[0].media;
+          const fileName = msg[0].message;
+          console.log(fileName);
+  
+          if (media) {
+            if (isMultiPart) {
+              const buffers = await handleMultiDown(data.parts);
+              const combinedBuffer = Buffer.concat(buffers);
+              res.set('Content-Type', media.document.mimeType);
+              res.attachment(regex(fileName));
+              res.send(combinedBuffer);
+            } else {
+              const buffer = await client.downloadMedia(media, { workers: 1 });
+              res.set('Content-Type', media.document.mimeType);
+              res.attachment(regex(fileName));
+              res.send(buffer);
+            }
+          } else {
+            res.status(404).send('Media not found');
+          }
+        } else {
+          res.status(404).send('Message not found');
+        }
+      } else {
+        res.status(404).send('Data not found');
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal server error');
     }
-  });
+});
+
+const handleMultiDown = async (parts) => {
+  const largeBufferArr = [];
+  for (const part of parts) {
+    const msg = await client.getMessages("me", { ids: part.id });
+    if (msg.length > 0) {
+      const media = msg[0].media;
+      if (media) {
+        const buffer = await client.downloadMedia(media, { workers: 1 });
+        largeBufferArr.push(buffer);
+      }
+    }
+  }
+  return largeBufferArr;
+};
+
   app.delete('/delete/:id',async (req,res)=>{
     const idToDel = parseInt(req.params.id)
     let found = false;
     let i = 0;
+    let allIds = []
+    const data = dataObj.find(data => data.id === idToDel || (Array.isArray(data.parts) && data.parts.some(part => part.id == idToDel)));
+    let dataObjindex = dataObj.indexOf(data);
+    if(data){
+      let first= data.parts[0].id;
+      let last = data.parts[(data.parts.length-1)].id;
+      while(first<=last){
+      allIds.push(first++)
+      const result= await client.invoke(new Api.messages.DeleteMessages({
+        revoke:true,
+        id:allIds,
+      }))
+      dataObj.splice(dataObjindex,1);
+      fs.writeFileSync(JSON_FILE,JSON.stringify(dataObj,null,2));
+      found = true
+    }
+
+    }
+    
     for(let file of dataObj){
       
       if(file.id == idToDel){

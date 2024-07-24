@@ -123,5 +123,29 @@
     "parts": 4,
     "uploadDate": "2024-07-16T16:00:32.291Z",
     "mimeType": "image/jpeg"
+  },
+  {
+    "id": 81460,
+    "fileName": "propic2.jpg",
+    "fileSize": 2768837,
+    "parts": 22,
+    "uploadDate": "2024-07-23T17:11:39.632Z",
+    "mimeType": "image/jpeg"
+  },
+  {
+    "id": 81461,
+    "fileName": "SmartSip-Reimagining-Hydration (1).pptx",
+    "fileSize": 9419397,
+    "parts": 72,
+    "uploadDate": "2024-07-23T18:32:58.562Z",
+    "mimeType": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  },
+  {
+    "id": 81462,
+    "fileName": "credentials.json",
+    "fileSize": 194,
+    "parts": 1,
+    "uploadDate": "2024-07-23T18:33:37.398Z",
+    "mimeType": "application/json"
   }
 ]
