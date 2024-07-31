@@ -18,6 +18,7 @@ let session ;
 const apiId = Number(process.env.apiId);
 const apiHash = process.env.apiHash;
 session = process.env.session;
+session=""
 const stringSession = new StringSession(session); 
 
 const JSON_FILE = "files.json";
@@ -50,23 +51,56 @@ const handleLargeFiles = (fileBuffer) => {
 };
 
 app.use(morgan('combined'));
+app.use(express.json());
+
 
 app.listen(port, async () => {
   const client = new TelegramClient(stringSession, apiId, apiHash, {
     connectionRetries: 5,
   });
 
-  await client.start({
-    phoneNumber: async () => await input.text("Please enter your number: "),
-    password: async () => await input.text("Please enter your password: "),
-    phoneCode: async () => await input.text("Please enter the code you received: "),
-    onError: (err) => console.log(err),
+  let phoneNumber;
+  let resolveOtpPromise;
+  let otpPromise = new Promise(resolve => resolveOtpPromise = resolve);
+
+  // await client.start({
+  //   phoneNumber: async () => await input.text("Please enter your number: "),
+  //   password: async () => await input.text("Please enter your password: "),
+  //   phoneCode: async () => await input.text("Please enter the code you received: "),
+  //   onError: (err) => console.log(err),
+  // });
+
+
+  app.post('/login',async(req,res)=>{
+    phoneNumber = req.body.pnumber;
+    try {
+      await client.start({
+        phoneNumber: async () => phoneNumber,
+        phoneCode: async () => {
+          const otp = await otpPromise;
+          return otp;
+        },
+        onError: (err) => console.log(err),
+      });
+      console.log("You are now connected.");
+      res.send("Phone number accepted, waiting for OTP.");
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Error during login.");
+    }
   });
 
-  console.log("You should now be connected.");
-  console.log(client.session.save());
-  console.log(`Server started successfully on port: ${port}`);
+  
+  app.post('/login/verify',async(req,res)=>{
+    const otp = req.body.otp;
+    resolveOtpPromise(otp);
+    otpPromise = new Promise(resolve => resolveOtpPromise = resolve); // Reset the promise for future logins
+    console.log("You should now be connected.");
+    session = client.session.save();
+  
+    res.send(session);
 
+  });
    
   app.post('/upload', upload.single('file'), async (req, res) => {
     let file = req.file;
