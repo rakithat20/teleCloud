@@ -8,17 +8,20 @@ import multer from 'multer';
 import fs from 'fs';
 import { CustomFile } from "telegram/client/uploads.js"; 
 import { constants } from "buffer";
+import cors from 'cors'
 
 dotenv.config();
 const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
+app.use(cors())
 const port = 3000;
 let session ;
 const apiId = Number(process.env.apiId);
 const apiHash = process.env.apiHash;
 session = process.env.session;
-session=""
+session = ''
+
 const stringSession = new StringSession(session); 
 
 const JSON_FILE = "files.json";
@@ -77,13 +80,14 @@ app.listen(port, async () => {
       await client.start({
         phoneNumber: async () => phoneNumber,
         phoneCode: async () => {
+          res.send(200)
           const otp = await otpPromise;
           return otp;
         },
         onError: (err) => console.log(err),
       });
       console.log("You are now connected.");
-      res.send("Phone number accepted, waiting for OTP.");
+      //res.send("Phone number accepted, waiting for OTP.");
     } catch (error) {
       console.error(error);
       res.status(500).send("Error during login.");
@@ -97,7 +101,7 @@ app.listen(port, async () => {
     otpPromise = new Promise(resolve => resolveOtpPromise = resolve); // Reset the promise for future logins
     console.log("You should now be connected.");
     session = client.session.save();
-  
+    
     res.send(session);
 
   });
