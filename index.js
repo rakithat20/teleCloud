@@ -20,7 +20,6 @@ let session ;
 const apiId = Number(process.env.apiId);
 const apiHash = process.env.apiHash;
 session = process.env.session;
-session = ''
 
 const stringSession = new StringSession(session); 
 
@@ -87,7 +86,7 @@ app.listen(port, async () => {
         onError: (err) => console.log(err),
       });
       console.log("You are now connected.");
-      //res.send("Phone number accepted, waiting for OTP.");
+      
     } catch (error) {
       console.error(error);
       res.status(500).send("Error during login.");
