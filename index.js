@@ -181,9 +181,9 @@ app.listen(port, async () => {
   });
   
   function regex(filename) {
-    // Regex to match "(number)" at the end of the filename before any extension
+    
     const regex = /\(\d+\)$/;
-    // Replace the matched pattern with an empty string
+    
     return filename.replace(regex, '');
   }
 
