@@ -97,7 +97,7 @@ app.listen(port, async () => {
   app.post('/login/verify',async(req,res)=>{
     const otp = req.body.otp;
     resolveOtpPromise(otp);
-    otpPromise = new Promise(resolve => resolveOtpPromise = resolve); // Reset the promise for future logins
+    otpPromise = new Promise(resolve => resolveOtpPromise = resolve); 
     console.log("You should now be connected.");
     session = client.session.save();
     
