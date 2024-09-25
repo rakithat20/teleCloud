@@ -25,7 +25,7 @@ const stringSession = new StringSession(session);
 
 const JSON_FILE = "files.json";
 let dataObj = [];
-const maxChunkSize = 5*1024*1024;
+const maxChunkSize = 20*1024*1024;
 const maxFileSize = 10*1024*1024;
 
 function dataObjResfresh(){
