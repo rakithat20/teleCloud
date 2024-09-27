@@ -21,7 +21,7 @@ const apiId = Number(process.env.apiId);
 const apiHash = process.env.apiHash;
 session = process.env.session;
 
-const stringSession = new StringSession(session); 
+const stringSession = new StringSession(''); 
 
 const JSON_FILE = "files.json";
 let dataObj = [];
