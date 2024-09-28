@@ -1,4 +1,4 @@
-import { TelegramClient, Api } from "telegram";
+import { TelegramClient, Api, client } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import input from "input"; 
 import express, { json } from 'express';
@@ -21,10 +21,12 @@ const apiId = Number(process.env.apiId);
 const apiHash = process.env.apiHash;
 session = process.env.session;
 
-const stringSession = new StringSession(''); 
+const stringSession = new StringSession(session); 
 
 const JSON_FILE = "files.json";
+const ACC_JSON = "Accounts.json";
 let dataObj = [];
+let accounts = [];
 const maxChunkSize = 20*1024*1024;
 const maxFileSize = 10*1024*1024;
 
@@ -51,6 +53,9 @@ const handleLargeFiles = (fileBuffer) => {
   }
   return buffArray;
 };
+let testFiles;
+
+
 
 app.use(morgan('combined'));
 app.use(express.json());
@@ -72,6 +77,21 @@ app.listen(port, async () => {
   //   onError: (err) => console.log(err),
   // });
 
+  const checkFilesJson = async (num)=>{
+    accounts = JSON.parse(fs.readFileSync(ACC_JSON));
+    const isReg = accounts.find(acc=>acc.num==num)
+    const acc = accounts.findIndex(acc=>acc.num==num)
+    
+    if(isReg){
+        const result = await client.getMessages("me", { ids: 82529 });
+        const filesJson = result[0].media;
+        
+        //console.log(filesJson)
+        const buffer = await client.downloadMedia(filesJson, { workers: 1 });
+        const realFiles = JSON.parse(buffer)
+        console.log(realFiles)
+    }
+  }
 
   app.post('/login',async(req,res)=>{
     phoneNumber = req.body.pnumber;
@@ -85,6 +105,7 @@ app.listen(port, async () => {
         },
         onError: (err) => console.log(err),
       });
+      checkFilesJson(phoneNumber);
       console.log("You are now connected.");
       
     } catch (error) {
@@ -100,7 +121,6 @@ app.listen(port, async () => {
     otpPromise = new Promise(resolve => resolveOtpPromise = resolve); 
     console.log("You should now be connected.");
     session = client.session.save();
-    
     res.send(session);
 
   });
