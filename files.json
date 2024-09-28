@@ -243,5 +243,21 @@
     "parts": 2,
     "uploadDate": "2024-09-25T14:24:39.244Z",
     "mimeType": "application/pdf"
+  },
+  {
+    "id": 82525,
+    "fileName": "elegant restaurant food social media template.png",
+    "fileSize": 1358537,
+    "parts": 11,
+    "uploadDate": "2024-09-27T12:44:27.993Z",
+    "mimeType": "image/png"
+  },
+  {
+    "id": 82529,
+    "fileName": "files.json",
+    "fileSize": 6198,
+    "parts": 1,
+    "uploadDate": "2024-09-28T09:56:47.250Z",
+    "mimeType": "application/json"
   }
 ]

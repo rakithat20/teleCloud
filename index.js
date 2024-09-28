@@ -67,6 +67,7 @@ app.listen(port, async () => {
   });
 
   let phoneNumber;
+  let realFiles;
   let resolveOtpPromise;
   let otpPromise = new Promise(resolve => resolveOtpPromise = resolve);
 
@@ -88,8 +89,8 @@ app.listen(port, async () => {
         
         //console.log(filesJson)
         const buffer = await client.downloadMedia(filesJson, { workers: 1 });
-        const realFiles = JSON.parse(buffer)
-        console.log(realFiles)
+         realFiles = JSON.parse(buffer)
+        
     }
   }
 
@@ -168,6 +169,7 @@ app.listen(port, async () => {
         fileInfo.parts.push(partInfo);
       }
       dataObj.push(fileInfo);
+      dataObj.push(realFiles);
       fs.writeFileSync(JSON_FILE, JSON.stringify(dataObj, null, 2));
       console.log(fileInfoArr);
     } else {
